@@ -1,0 +1,151 @@
+{
+    "slots": {
+        "0": {
+            "name": "Screen",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "1": {
+            "name": "Memory",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "2": {
+            "name": "Receiver",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "3": {
+            "name": "slot4",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "4": {
+            "name": "slot5",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "5": {
+            "name": "slot6",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "6": {
+            "name": "slot7",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "7": {
+            "name": "slot8",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "8": {
+            "name": "slot9",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "9": {
+            "name": "slot10",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "-1": {
+            "name": "unit",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "-3": {
+            "name": "player",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "-2": {
+            "name": "construct",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "-4": {
+            "name": "system",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        },
+        "-5": {
+            "name": "library",
+            "type": {
+                "events": [],
+                "methods": []
+            }
+        }
+    },
+    "handlers": [
+        {
+            "code": "system.print(\"Received\")\nsystem.print(message)\nUpdateMemory(message)",
+            "filter": {
+                "args": [
+                    {
+                        "variable": "*"
+                    },
+                    {
+                        "variable": "*"
+                    }
+                ],
+                "signature": "onReceived(channel,message)",
+                "slotKey": "2"
+            },
+            "key": "0"
+        },
+        {
+            "code": "-- Splits String at Delimiter --\nfunction mysplit(inputstr, sep)\n    if sep == nil then\n        sep = \"%s\"\n    end\n    local t={}\n    for str in string.gmatch(inputstr, \"([^\"..sep..\"]+)\") do\n        table.insert(t, str)\n    end\n    return t\nend\n\n-- Rounds Number to Precision --\nfunction round(num, numDecimalPlaces)\n  local mult = 10^(numDecimalPlaces or 0)\n  return math.floor(num * mult + 0.5) / mult\nend\n\n-- Update Memory --\nfunction UpdateMemory(Payload)\n    if Payload ~= nil and Payload ~= '' then\n\n        PayloadType = mysplit(Payload, \"&\")    \n\n        Info = mysplit(PayloadType[1], \"$\")\n        StorageTime = tonumber(Info[1])\n        Vol = tonumber(Info[2])\n        Mass = tonumber(Info[3])\n        CalibrationTime = tonumber(Info[4])\n        CDTime = Info[5]\n        ConstructName = Info[6]\n        ConstructPos = Info[7]\n        ReceivedTime = tonumber(Info[8])\n        ConstructID = Info[9]\n\n        system.print(\"Payload\")\n        system.print(tostring(PayloadType[1]))\n\n        if PayloadType[2] ~= nil and PayloadType[2] ~= '' then\n\n            DataRows = mysplit(PayloadType[2], \"#\")  \n            DataTable = {}\n            for idx, v in ipairs(DataRows) do\n                CurrentRow = mysplit(v, \"$\") \n                DataTable[CurrentRow[1]] = tonumber(CurrentRow[2])\n            end\n\n        end\n\n        Memory.clearValue(ConstructID)\n\n        CurrentDataTable = '#'\n        for ore,value in pairs(DataTable) do\n            CurrentDataTable = CurrentDataTable .. '@' .. ore .. '$' .. value\n        end\n\n        CurrentRow = StorageTime .. '$' ..\n        Vol .. '$' ..\n        Mass .. '$' ..\n        CalibrationTime .. '$' ..\n        CDTime .. '$' ..\n        ConstructName .. '$' ..\n        ConstructPos .. '$' ..\n        tostring(ReceivedTime) ..\n        CurrentDataTable\n        \n        Memory.setStringValue(ConstructID,CurrentRow) \n\n    end\nend\n\n-- Loads TableX --\ntablex = require(\"pl/tablex\")\n\n-- Load Master Table --\nfunction LoadMasterTable()\n\n    MasterTable = {}\n    KeyCount = Memory.getNbKeys()\n\n    if KeyCount > 0 then\n\n        Keys = Memory.getKeyList()\n\n        system.print(json.encode(Keys))\n\n        for ii = 1,KeyCount do\n\n            if Keys[ii] ~= nil and Keys[ii] ~= '' then\n\n                data = Memory.getStringValue(Keys[ii]) \n\n                system.print(data)\n\n                local DataType = mysplit(data, \"#\")        \n                local DataTable = {}\n                local OreType = mysplit(DataType[2],'@')\n\n                for oreidx, oredata in ipairs(OreType) do\n                    CurrentOre = mysplit(oredata,'$')\n                    DataTable[CurrentOre[1]] = tonumber(CurrentOre[2])\n                end\n\n                local DataSplit = mysplit(DataType[1], \"$\") \n\n                MasterTable[ii] = {\n                    ConstructName = DataSplit[6],\n                    Mass = tonumber(DataSplit[3]), \n                    Vol = tonumber(DataSplit[2]), \n                    StorageTime = tonumber(DataSplit[1]), \n                    CalibrationTime = tonumber(DataSplit[4]),\n                    CDTime = tonumber(DataSplit[5]),\n                    PosString = \"::pos{0,0,\" .. DataSplit[7]  .. \"}\",\n                    LastUpdated = tonumber(DataSplit[8]),\n                    DataTable = DataTable\n                }\n\n            end\n            \n        end\n\n    end\n\nend\n\nunit.setTimer('Update',3)",
+            "filter": {
+                "args": [],
+                "signature": "onStart()",
+                "slotKey": "-1"
+            },
+            "key": "1"
+        },
+        {
+            "code": "system.print(\"Update\")\nLoadMasterTable()\n\n--system.print(\"MasterTable\")\n--system.print(json.encode(MasterTable))\n\n\nSortTable = {}\nOreDataTable = {}\n\nfor k,v in ipairs(MasterTable) do\n    \n    SortTable[k] = math.min(tonumber(v.StorageTime), tonumber(v.CalibrationTime), tonumber(v.CDTime))\n   \n    for ore, rate in pairs(v.DataTable) do\n        Old = OreDataTable[ore] or 0\n        OreDataTable[ore] = Old + rate\n    end\n    \nend\n\nConstructsText = ''\nfor k,v in tablex.sortv(SortTable) do\n    \n    StorageEstimate = round(tonumber(MasterTable[k].StorageTime)\n    - (system.getArkTime()-tonumber(MasterTable[k].LastUpdated))/60/60,2)\n    \n    CalibrationEstimate = round(tonumber(MasterTable[k].CalibrationTime)\n    - (system.getArkTime()-tonumber(MasterTable[k].LastUpdated))/24/60/60,2)\n    \n    CooldownEstimate = round(tonumber(MasterTable[k].CDTime)\n    - (system.getArkTime()-tonumber(MasterTable[k].LastUpdated))/60/60,2)\n        \n    MassRate = 0\n    VolumeRate = 0\n    \n    for ore, rate in pairs(MasterTable[k].DataTable) do\n        \n        VolumeRate = VolumeRate + rate\n        \n        OreStats = system.getItem(ore)\n        MassRate = MassRate + rate*OreStats.unitMass\n        \n    end\n    \n    MassEstimate = round(tonumber(MasterTable[k].Mass)\n    + MassRate*(system.getArkTime()-tonumber(MasterTable[k].LastUpdated))/60/60,2)\n    \n    VolEstimate = round(tonumber(MasterTable[k].Vol)\n    + VolumeRate*(system.getArkTime()-tonumber(MasterTable[k].LastUpdated))/60/60,2)\n    \n    CurrentRow = \"#\" .. \n    \"$\" .. MasterTable[k].ConstructName ..\n    \"$\" .. MassEstimate ..\n    \"$\" .. VolEstimate ..\n    \"$\" .. StorageEstimate ..\n    \"$\" .. CalibrationEstimate ..\n    \"$\" .. CooldownEstimate\n    \n    ConstructsText = ConstructsText .. CurrentRow\nend    \n\nOreText = ''    \nfor k,v in pairs(OreDataTable) do\n    CurrentRow = \"#\" .. \n    \"$\" .. k ..\n    \"$\" .. OreDataTable[k]\n\n    OreText = OreText .. CurrentRow\nend   \n\nMessage = ConstructsText .. \"&\" .. OreText\n\nScreen.setScriptInput(Message)",
+            "filter": {
+                "args": [
+                    {
+                        "value": "Update"
+                    }
+                ],
+                "signature": "onTimer(tag)",
+                "slotKey": "-1"
+            },
+            "key": "2"
+        }
+    ],
+    "methods": [],
+    "events": []
+}
