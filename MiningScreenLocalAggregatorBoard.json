@@ -159,7 +159,7 @@
             "key": "3"
         },
         {
-            "code": "ChunkIndex = ChunkIndex + 1;\nCurrentChunk = Message:sub((ChunkIndex-1)*500 + 1, ChunkIndex*500);\nEmitter.send(\"Chunks\",CurrentChunk);\nif ChunkIndex == ChunkCount then\n    unit.stopTimer(\"Send\");\nend\n",
+            "code": "ChunkIndex = ChunkIndex + 1;\nCurrentChunk = EmitterMessage:sub((ChunkIndex-1)*500 + 1, ChunkIndex*500);\nEmitter.send(\"Chunks\",CurrentChunk);\nif ChunkIndex == ChunkCount then\n    unit.stopTimer(\"Send\");\nend\n",
             "filter": {
                 "args": [
                     {
@@ -181,7 +181,7 @@
             "key": "5"
         },
         {
-            "code": "if Emitter then\n    \n    Message = json.encode(MasterTable)\n    ChunkCount = math.ceil(Message:len() / 500);\n    \n    Emitter.send(\"ChunkCount\",tostring(ChunkCount));\n\n    ChunkIndex = 0;\n    unit.setTimer(\"Send\",0.5);\n    \nend ",
+            "code": "if Emitter then\n    \n    EmitterMessage = json.encode(MasterTable)\n    ChunkCount = math.ceil(EmitterMessage:len() / 500);\n    \n    Emitter.send(\"ChunkCount\",tostring(ChunkCount));\n\n    ChunkIndex = 0;\n    unit.setTimer(\"Send\",0.5);\n    \nend ",
             "filter": {
                 "args": [
                     {
